@@ -1,4 +1,4 @@
-package com.protocb.serveragent.circuitbreaker.gedcb.dto;
+package com.protocb.serveragent.gedcb.pojo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;

@@ -1,7 +1,7 @@
 package com.protocb.serveragent.gedcb;
 
 import com.protocb.serveragent.AgentState;
-import com.protocb.serveragent.circuitbreaker.gedcb.dto.SetRevisionMessage;
+import com.protocb.serveragent.gedcb.pojo.SetRevisionMessage;
 import com.protocb.serveragent.gedcb.pojo.ClientEntry;
 import com.protocb.serveragent.interaction.Observer;
 import com.protocb.serveragent.logger.Logger;
@@ -13,7 +13,10 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Component
@@ -28,6 +31,9 @@ public class GEDCBServerRegister implements Observer {
     @Autowired
     private Proxy proxy;
 
+    @Autowired
+    private ScheduledExecutorService scheduledExecutorService;
+
     private Semaphore lock;
 
     private boolean enabled;
@@ -39,6 +45,8 @@ public class GEDCBServerRegister implements Observer {
     private int setRevisionPeriod;
 
     private int gsrMessageCount;
+
+    private ScheduledFuture gsrTask;
 
     private Map<Integer, List<ClientEntry>> gossipSets;
 
@@ -61,7 +69,7 @@ public class GEDCBServerRegister implements Observer {
     private void removeStaleEntries() {
         long currentTime = Instant.now().toEpochMilli() % 1000000;
         for(Integer setId : this.gossipSets.keySet()) {
-            this.gossipSets.get(setId).removeIf(entry -> currentTime - entry.getTimestamp() >= 0);
+            this.gossipSets.get(setId).removeIf(entry -> currentTime - entry.getTimestamp() >= setRevisionPeriod);
             this.setSizes.put(setId, this.gossipSets.get(setId).size());
         }
     }
@@ -89,7 +97,7 @@ public class GEDCBServerRegister implements Observer {
                 unnecesarySetCount--;
             }
         } else if(this.gossipSets.keySet().size() < requiredSetCount) {
-            int setsNeeded = requiredSetCount -this.gossipSets.keySet().size();
+            int setsNeeded = requiredSetCount - this.gossipSets.keySet().size();
             while(setsNeeded > 0) {
                 int newId = (int)(Math.random() * 1000);
                 if(this.gossipSets.keySet().contains(newId)) continue;
@@ -116,7 +124,7 @@ public class GEDCBServerRegister implements Observer {
 
     }
 
-    public void reviseGossipSet() {
+    private void reviseGossipSet() {
         try {
 
             lock.acquire();
@@ -130,13 +138,13 @@ public class GEDCBServerRegister implements Observer {
                 List<String> gossipSet = entries.stream().map(entry -> entry.getClientId()).collect(Collectors.toList());
                 SetRevisionMessage setRevisionMessage = SetRevisionMessage.builder().version(version).clientIds(gossipSet).build();
 
-                List<String> clientsThatReceiveGSR = new ArrayList<>();
-                while(clientsThatReceiveGSR.size() < gsrMessageCount && clientsThatReceiveGSR.size() < gossipSet.size()) {
+                List<String> clientsThatReceiveGsrMessage = new ArrayList<>();
+                while(clientsThatReceiveGsrMessage.size() < gsrMessageCount && clientsThatReceiveGsrMessage.size() < gossipSet.size()) {
                     int randomIndex = (int)(Math.random() * 1000) % gossipSet.size();
                     String clientId = gossipSet.get(randomIndex);
-                    if(!clientsThatReceiveGSR.contains(clientId)) {
+                    if(!clientsThatReceiveGsrMessage.contains(clientId)) {
                         proxy.sendGsrMessage(clientId, setRevisionMessage);
-                        clientsThatReceiveGSR.add(clientId);
+                        clientsThatReceiveGsrMessage.add(clientId);
                     }
                 }
 
@@ -192,14 +200,30 @@ public class GEDCBServerRegister implements Observer {
     }
 
     private void initialize(Map<String, Integer> parameters) {
-        //Create first entry
+        this.gsrMessageCount = parameters.get("gsrMessageCount");
+        this.version = 1l;
+        this.minSetSize = parameters.get("minSetSize");
+        this.setRevisionPeriod = parameters.get("setRevisionPeriod");
+
+        int randomId = (int)(Math.random() * 1000);
+        this.gossipSets.clear();
+        this.setSizes.clear();
+        this.gossipSets.put(randomId, new ArrayList<>());
+        this.setSizes.put(randomId, 0);
+
+        this.enabled = true;
+        if(gsrTask != null && !gsrTask.isDone()) {
+            gsrTask.cancel(true);
+        }
+        gsrTask = scheduledExecutorService.scheduleWithFixedDelay(() -> this.reviseGossipSet(), 0, this.setRevisionPeriod, TimeUnit.MILLISECONDS);
     }
 
     private void reset() {
-
+        this.enabled = false;
+        if(gsrTask != null && !gsrTask.isDone()) {
+            gsrTask.cancel(true);
+        }
     }
-
-
 
     @Override
     public void update() {

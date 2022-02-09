@@ -1,6 +1,7 @@
 package com.protocb.serveragent;
 
 import com.protocb.serveragent.dto.ServerRequestBody;
+import com.protocb.serveragent.gedcb.GEDCBServerRegister;
 import com.protocb.serveragent.logger.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,9 +21,14 @@ public class WestBoundAPI {
     @Autowired
     private Logger logger;
 
+    @Autowired
+    private GEDCBServerRegister gedcbServerRegister;
+
     @PostMapping("/")
     public ResponseEntity handleClientAgentRequest(@RequestBody ServerRequestBody serverRequestBody) {
         try {
+
+            gedcbServerRegister.registerInteraction(serverRequestBody.getIp());
 
             long currentTime = Instant.now().toEpochMilli() % 1000000;
             long timeElapsedSinceRequestOriginated = serverRequestBody.getTimestamp() - currentTime;

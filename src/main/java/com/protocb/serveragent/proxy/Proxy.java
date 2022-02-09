@@ -1,8 +1,7 @@
 package com.protocb.serveragent.proxy;
 
 import com.protocb.serveragent.AgentState;
-import com.protocb.serveragent.circuitbreaker.gedcb.dto.GossipSetState;
-import com.protocb.serveragent.circuitbreaker.gedcb.dto.SetRevisionMessage;
+import com.protocb.serveragent.gedcb.pojo.SetRevisionMessage;
 import com.protocb.serveragent.dto.ServerRequestBody;
 import com.protocb.serveragent.interaction.Observer;
 import com.protocb.serveragent.logger.Logger;
@@ -16,7 +15,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 @Component
@@ -68,10 +66,10 @@ public class Proxy implements Observer {
     public void sendGsrMessage(String clientUrl, SetRevisionMessage setRevisionMessage) {
         try {
 
+            if(!serverAvailable) return;
+
             boolean shouldFailTransiently = Math.random() < tfProbability;
             boolean clientReachable = !networkPartitioned || allowList.contains(clientUrl);
-
-            if(!serverAvailable) return;
 
             if(!shouldFailTransiently && clientReachable) {
                 WebClient.create(clientUrl)
