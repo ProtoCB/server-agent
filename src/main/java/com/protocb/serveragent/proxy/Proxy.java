@@ -2,7 +2,6 @@ package com.protocb.serveragent.proxy;
 
 import com.protocb.serveragent.AgentState;
 import com.protocb.serveragent.gedcb.pojo.SetRevisionMessage;
-import com.protocb.serveragent.dto.ServerRequestBody;
 import com.protocb.serveragent.interaction.Observer;
 import com.protocb.serveragent.logger.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +24,6 @@ public class Proxy implements Observer {
 
     @Autowired
     private Logger logger;
-
-    @Autowired
-    private ServerRequestBody serverRequestBody;
 
     private boolean networkPartitioned;
 

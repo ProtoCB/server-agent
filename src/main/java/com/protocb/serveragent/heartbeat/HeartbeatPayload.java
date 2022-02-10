@@ -1,18 +1,23 @@
 package com.protocb.serveragent.heartbeat;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.protocb.serveragent.config.EnvironmentVariables;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 
-import static com.protocb.serveragent.config.EnvironmentVariables.*;
+import static com.protocb.serveragent.config.AgentConstants.*;
 
 @Component
 @Getter
 @Setter
 public class HeartbeatPayload {
+
+    @Autowired
+    private EnvironmentVariables environmentVariables;
 
     @JsonProperty
     private String ip;
@@ -28,8 +33,8 @@ public class HeartbeatPayload {
 
     @PostConstruct
     public void postConstruct() {
-        ip = AGENT_HOST + AGENT_PORT;
-        agentSecret = AGENT_SECRET;
+        ip = environmentVariables.getAgentHost() + ":" + environmentVariables.getAgentPort();
+        agentSecret = environmentVariables.getAgentSecret();
         experimentSession = "Uninitialized";
         experimentStatus = "Uninitialized";
     }

@@ -5,7 +5,9 @@ import com.google.cloud.storage.Bucket;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.StorageClient;
+import com.protocb.serveragent.config.EnvironmentVariables;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -16,11 +18,13 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.List;
 
-import static com.protocb.serveragent.config.EnvironmentVariables.*;
-import static java.lang.System.exit;
+import static com.protocb.serveragent.config.AgentConstants.*;
 
 @Component
 public class Logger {
+
+    @Autowired
+    private EnvironmentVariables environmentVariables;
 
     private String experimentSession;
 
@@ -40,7 +44,7 @@ public class Logger {
 
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                    .setStorageBucket(STORAGE_BUCKET)
+                    .setStorageBucket(environmentVariables.getStorageBucket())
                     .build();
 
             FirebaseApp firebaseApp = FirebaseApp.initializeApp(options);
@@ -57,7 +61,8 @@ public class Logger {
     private void createExperimentSessionLog() {
         try {
             FileUtils.cleanDirectory(new File(LOG_DIRECTORY));
-            sessionLog = new File(LOG_DIRECTORY + "/" + "server-" + AGENT_HOST + AGENT_PORT + ".csv");
+            String agentIp = environmentVariables.getAgentHost() + ":" + environmentVariables.getAgentPort();
+            sessionLog = new File(LOG_DIRECTORY + "/" + "server-" + agentIp + ".csv");
             sessionLog.createNewFile();
             bufferedWriter = new BufferedWriter(new FileWriter(sessionLog));
         } catch (IOException e) {
@@ -68,7 +73,8 @@ public class Logger {
     public void shipExperimentSessionLog() {
         try {
             bufferedWriter.flush();
-            bucket.create(experimentSession + "/" + "server-" + AGENT_HOST + AGENT_PORT + ".csv", Files.readAllBytes(Paths.get(sessionLog.getAbsolutePath())),"csv");
+            String agentIp = environmentVariables.getAgentHost() + ":" + environmentVariables.getAgentPort();
+            bucket.create(experimentSession + "/" + "server-" + agentIp + ".csv", Files.readAllBytes(Paths.get(sessionLog.getAbsolutePath())),"csv");
         } catch (IOException e) {
             e.printStackTrace();
         }

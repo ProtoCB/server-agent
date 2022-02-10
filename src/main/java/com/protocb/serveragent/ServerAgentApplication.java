@@ -1,14 +1,18 @@
 package com.protocb.serveragent;
 
+import com.protocb.serveragent.config.EnvironmentVariables;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 
-import static com.protocb.serveragent.config.EnvironmentVariables.*;
 
 @SpringBootApplication
 public class ServerAgentApplication {
+
+    @Autowired
+    private EnvironmentVariables environmentVariables;
 
 	public static void main(String[] args) {
 		SpringApplication.run(ServerAgentApplication.class, args);
@@ -16,12 +20,10 @@ public class ServerAgentApplication {
 
     @EventListener(ApplicationReadyEvent.class)
     public void doSomethingAfterStartup() {
-        System.out.println("hello world, I have just started up");
-        System.out.println(AGENT_HOST);
-        System.out.println(AGENT_PORT);
-        System.out.println(STORAGE_BUCKET);
-        System.out.println(CONTROLLER_URL);
-        System.out.println(AGENT_SECRET);
+        System.out.println("Agent Host IP: " + environmentVariables.getAgentHost());
+        System.out.println("Agent Port: " + environmentVariables.getAgentPort());
+        System.out.println("Storage Bucket: " + environmentVariables.getStorageBucket());
+        System.out.println("Controller URL: " + environmentVariables.getControllerUrl());
     }
 
 }

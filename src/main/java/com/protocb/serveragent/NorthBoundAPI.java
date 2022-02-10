@@ -1,13 +1,13 @@
 package com.protocb.serveragent;
 
+import com.protocb.serveragent.config.EnvironmentVariables;
 import com.protocb.serveragent.dto.ExperimentRecipe;
 import com.protocb.serveragent.scheduler.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import static com.protocb.serveragent.config.EnvironmentVariables.AGENT_SECRET;
-import static com.protocb.serveragent.config.EnvironmentVariables.NORTHBOUND_ENDPOINT;
+import static com.protocb.serveragent.config.AgentConstants.NORTHBOUND_ENDPOINT;
 
 /*
 * Rest Controller exposing NorthBoundAPI to ProtoCB Controller
@@ -15,6 +15,9 @@ import static com.protocb.serveragent.config.EnvironmentVariables.NORTHBOUND_END
 @RestController
 @RequestMapping(NORTHBOUND_ENDPOINT)
 public class NorthBoundAPI {
+
+    @Autowired
+    private EnvironmentVariables environmentVariables;
 
     @Autowired
     private AgentState agentState;
@@ -32,7 +35,7 @@ public class NorthBoundAPI {
     public ResponseEntity scheduleExperiment(@RequestHeader("agent-secret") String secret, @RequestBody ExperimentRecipe experimentRecipe) {
         try {
 
-            if(!secret.equals(AGENT_SECRET)) {
+            if(!secret.equals(environmentVariables.getAgentSecret())) {
                 return ResponseEntity.status(401).body(null);
             }
 
@@ -64,7 +67,7 @@ public class NorthBoundAPI {
     public ResponseEntity resetAgent(@RequestHeader("agent-secret") String secret) {
         try {
 
-            if(!secret.equals(AGENT_SECRET)) {
+            if(!secret.equals(environmentVariables.getAgentSecret())) {
                 return ResponseEntity.status(401).body(null);
             }
 

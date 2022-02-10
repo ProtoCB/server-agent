@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
 
-import static com.protocb.serveragent.config.EnvironmentVariables.WESTBOUND_ENDPOINT;
+import static com.protocb.serveragent.config.AgentConstants.WESTBOUND_ENDPOINT;
 
 /*
 * Rest Controller exposing WestBoundAPI to ProtoCB Client Agents
