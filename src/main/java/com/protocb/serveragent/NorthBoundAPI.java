@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.*;
 import static com.protocb.serveragent.config.EnvironmentVariables.AGENT_SECRET;
 import static com.protocb.serveragent.config.EnvironmentVariables.NORTHBOUND_ENDPOINT;
 
+/*
+* Rest Controller exposing NorthBoundAPI to ProtoCB Controller
+* */
 @RestController
 @RequestMapping(NORTHBOUND_ENDPOINT)
 public class NorthBoundAPI {

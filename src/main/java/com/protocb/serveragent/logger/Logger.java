@@ -17,6 +17,7 @@ import java.time.Instant;
 import java.util.List;
 
 import static com.protocb.serveragent.config.EnvironmentVariables.*;
+import static java.lang.System.exit;
 
 @Component
 public class Logger {
@@ -56,7 +57,7 @@ public class Logger {
     private void createExperimentSessionLog() {
         try {
             FileUtils.cleanDirectory(new File(LOG_DIRECTORY));
-            sessionLog = new File(LOG_DIRECTORY + "/" + "server-" + AGENT_URL + ".csv");
+            sessionLog = new File(LOG_DIRECTORY + "/" + "server-" + AGENT_HOST + AGENT_PORT + ".csv");
             sessionLog.createNewFile();
             bufferedWriter = new BufferedWriter(new FileWriter(sessionLog));
         } catch (IOException e) {
@@ -67,7 +68,7 @@ public class Logger {
     public void shipExperimentSessionLog() {
         try {
             bufferedWriter.flush();
-            bucket.create(experimentSession + "/" + "server-" + AGENT_URL + ".csv", Files.readAllBytes(Paths.get(sessionLog.getAbsolutePath())),"csv");
+            bucket.create(experimentSession + "/" + "server-" + AGENT_HOST + AGENT_PORT + ".csv", Files.readAllBytes(Paths.get(sessionLog.getAbsolutePath())),"csv");
         } catch (IOException e) {
             e.printStackTrace();
         }

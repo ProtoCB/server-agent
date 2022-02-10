@@ -14,6 +14,9 @@ import java.time.Instant;
 
 import static com.protocb.serveragent.config.EnvironmentVariables.WESTBOUND_ENDPOINT;
 
+/*
+* Rest Controller exposing WestBoundAPI to ProtoCB Client Agents
+* */
 @RestController
 @RequestMapping(WESTBOUND_ENDPOINT)
 public class WestBoundAPI {

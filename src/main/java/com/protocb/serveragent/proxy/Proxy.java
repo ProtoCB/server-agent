@@ -40,7 +40,7 @@ public class Proxy implements Observer {
     private int failureInferenceTime;
 
     @PostConstruct
-    private void postContruct() {
+    private void initialize() {
         allowList = new ArrayList<>();
         serverAvailable = false;
         networkPartitioned = false;
@@ -50,7 +50,7 @@ public class Proxy implements Observer {
     }
 
     @PreDestroy
-    private void preDestroy() {
+    private void cleanUp() {
         agentState.removeObserver(this);
     }
 

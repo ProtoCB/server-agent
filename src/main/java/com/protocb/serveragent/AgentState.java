@@ -4,6 +4,7 @@ import com.protocb.serveragent.interaction.Observer;
 import com.protocb.serveragent.interaction.Subject;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -42,7 +43,7 @@ public class AgentState implements Subject {
     private int failureInferenceTime;
 
     @PostConstruct
-    private void postContruct() {
+    private void initialize() {
         this.observers = new ArrayList<>();
         this.networkPartitioned = false;
         this.experimentSession = "Uninitialized";
@@ -57,12 +58,12 @@ public class AgentState implements Subject {
     }
 
     @Override
-    public void registerObserver(Observer observer) {
+    public void registerObserver(@NonNull final Observer observer) {
         observers.add(observer);
     }
 
     @Override
-    public void removeObserver(Observer observer) {
+    public void removeObserver(@NonNull final Observer observer) {
         observers.remove(observer);
     }
 
@@ -87,7 +88,7 @@ public class AgentState implements Subject {
         this.notifyObservers();
     }
 
-    public void setNetworkPartition(boolean networkPartitioned, List<String> partitionMembers) {
+    public void setNetworkPartition(boolean networkPartitioned, @NonNull final List<String> partitionMembers) {
         this.networkPartitioned = networkPartitioned;
         this.partitionMembers = partitionMembers;
         this.notifyObservers();
@@ -98,7 +99,7 @@ public class AgentState implements Subject {
         this.notifyObservers();
     }
 
-    public void setExperimentSession(String experimentSession) {
+    public void setExperimentSession(@NonNull final String experimentSession) {
         this.experimentSession = experimentSession;
         this.experimentStatus = "Scheduled";
     }
@@ -120,11 +121,11 @@ public class AgentState implements Subject {
         this.notifyObservers();
     }
 
-    public void setCircuitBreakerType(String circuitBreakerType) {
+    public void setCircuitBreakerType(@NonNull final String circuitBreakerType) {
         this.circuitBreakerType = circuitBreakerType;
     }
 
-    public void setCircuitBreakerParameters(Map<String, Integer> circuitBreakerParameters) {
+    public void setCircuitBreakerParameters(@NonNull final Map<String, Integer> circuitBreakerParameters) {
         this.circuitBreakerParameters = circuitBreakerParameters;
     }
 
@@ -133,11 +134,11 @@ public class AgentState implements Subject {
         this.notifyObservers();
     }
 
-    public void setExperimentStatus(String experimentStatus) {
+    public void setExperimentStatus(@NonNull final String experimentStatus) {
         this.experimentStatus = experimentStatus;
     }
 
-    public void setEventsToLog(List<String> eventsToLog) {
+    public void setEventsToLog(@NonNull final List<String> eventsToLog) {
         this.eventsToLog = eventsToLog;
     }
 }

@@ -49,7 +49,7 @@ public class ExperimentScheduler {
     }
 
     @PostConstruct
-    public void postConstruct() {
+    public void initialize() {
         activityStates = new ArrayList<>();
         schedule = new ArrayList<>();
     }

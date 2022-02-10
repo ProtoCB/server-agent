@@ -7,8 +7,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 
-import static com.protocb.serveragent.config.EnvironmentVariables.AGENT_SECRET;
-import static com.protocb.serveragent.config.EnvironmentVariables.AGENT_URL;
+import static com.protocb.serveragent.config.EnvironmentVariables.*;
 
 @Component
 @Getter
@@ -29,7 +28,7 @@ public class HeartbeatPayload {
 
     @PostConstruct
     public void postConstruct() {
-        ip = AGENT_URL;
+        ip = AGENT_HOST + AGENT_PORT;
         agentSecret = AGENT_SECRET;
         experimentSession = "Uninitialized";
         experimentStatus = "Uninitialized";

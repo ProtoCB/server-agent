@@ -44,7 +44,7 @@ public class NetworkPartitionScheduler {
     }
 
     @PostConstruct
-    public void postConstruct() {
+    public void initialize() {
         partitions = new ArrayList<>();
         schedule = new ArrayList<>();
     }
@@ -78,7 +78,11 @@ public class NetworkPartitionScheduler {
 
         if(nextEventIndex < 0) {
             logger.logErrorEvent("NetworkPartitionScheduler - Trying to work on an empty schedule");
-            return NetworkPartitionEvent.builder().networkPartitioned(false).partition(new ArrayList<String>()).build();
+            return NetworkPartitionEvent
+                    .builder()
+                    .networkPartitioned(false)
+                    .partition(new ArrayList<String>())
+                    .build();
         }
 
         return partitions.get(nextEventIndex++);

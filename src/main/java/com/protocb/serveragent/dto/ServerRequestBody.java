@@ -1,17 +1,9 @@
 package com.protocb.serveragent.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.stereotype.Component;
+import lombok.Data;
 
-import javax.annotation.PostConstruct;
-
-import static com.protocb.serveragent.config.EnvironmentVariables.AGENT_URL;
-
-@Component
-@Getter
-@Setter
+@Data
 public class ServerRequestBody {
 
     @JsonProperty
@@ -23,10 +15,4 @@ public class ServerRequestBody {
     @JsonProperty
     private long timestamp;
 
-    @PostConstruct
-    public void postConstruct() {
-        ip = AGENT_URL;
-        minLatency = 0;
-        timestamp = 0;
-    }
 }
