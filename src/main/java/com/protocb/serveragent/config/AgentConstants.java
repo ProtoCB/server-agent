@@ -11,7 +11,5 @@ public class AgentConstants {
     public static final String SCHEDULING_EVENT_ID = "SCH";
     public static final String ERROR_EVENT_ID = "ERR";
     public static final int SCHEDULER_POOL_SIZE = 6;
-    public static final String SERVICE_ACCOUNT_FILE_PATH = "/home/aashay/protocb/serviceAccount.json";
-    public static final String LOG_DIRECTORY = "/home/aashay/protocb/logs";
 
 }

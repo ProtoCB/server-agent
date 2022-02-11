@@ -11,19 +11,8 @@ import org.springframework.context.event.EventListener;
 @SpringBootApplication
 public class ServerAgentApplication {
 
-    @Autowired
-    private EnvironmentVariables environmentVariables;
-
 	public static void main(String[] args) {
 		SpringApplication.run(ServerAgentApplication.class, args);
 	}
-
-    @EventListener(ApplicationReadyEvent.class)
-    public void doSomethingAfterStartup() {
-        System.out.println("Agent Host IP: " + environmentVariables.getAgentHost());
-        System.out.println("Agent Port: " + environmentVariables.getAgentPort());
-        System.out.println("Storage Bucket: " + environmentVariables.getStorageBucket());
-        System.out.println("Controller URL: " + environmentVariables.getControllerUrl());
-    }
 
 }

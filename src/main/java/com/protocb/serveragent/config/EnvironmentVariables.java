@@ -1,11 +1,9 @@
 package com.protocb.serveragent.config;
 
-import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-@Getter
 public class EnvironmentVariables {
 
     @Value("${agent.host}")
@@ -22,5 +20,36 @@ public class EnvironmentVariables {
 
     @Value("${agent.secret}")
     private String agentSecret;
+
+    @Value("${protocb.home}")
+    private String protocbDirectory;
+
+    public String getControllerUrl() {
+        return controllerUrl;
+    }
+
+    public String getStorageBucket() {
+        return storageBucket;
+    }
+
+    public String getAgentSecret() {
+        return agentSecret;
+    }
+
+    public String getAgentIp() {
+        return this.agentHost + ":" + this.agentPort;
+    }
+
+    public String getLogFilePath() {
+        return this.protocbDirectory + "/logs/server-" + this.getAgentIp() + ".csv";
+    }
+
+    public String getLogDirectory() {
+        return this.protocbDirectory + "/logs";
+    }
+
+    public String getServiceAccountFilePath() {
+        return this.protocbDirectory + "/serviceAccount.json";
+    }
 
 }

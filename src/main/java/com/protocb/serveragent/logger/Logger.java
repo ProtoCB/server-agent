@@ -40,7 +40,7 @@ public class Logger {
     public void postConstruct(){
         try {
 
-            FileInputStream serviceAccount = new FileInputStream(SERVICE_ACCOUNT_FILE_PATH);
+            FileInputStream serviceAccount = new FileInputStream(environmentVariables.getServiceAccountFilePath());
 
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
@@ -60,9 +60,8 @@ public class Logger {
 
     private void createExperimentSessionLog() {
         try {
-            FileUtils.cleanDirectory(new File(LOG_DIRECTORY));
-            String agentIp = environmentVariables.getAgentHost() + ":" + environmentVariables.getAgentPort();
-            sessionLog = new File(LOG_DIRECTORY + "/" + "server-" + agentIp + ".csv");
+            FileUtils.cleanDirectory(new File(environmentVariables.getLogDirectory()));
+            sessionLog = new File(environmentVariables.getLogFilePath());
             sessionLog.createNewFile();
             bufferedWriter = new BufferedWriter(new FileWriter(sessionLog));
         } catch (IOException e) {
@@ -73,7 +72,7 @@ public class Logger {
     public void shipExperimentSessionLog() {
         try {
             bufferedWriter.flush();
-            String agentIp = environmentVariables.getAgentHost() + ":" + environmentVariables.getAgentPort();
+            String agentIp = environmentVariables.getAgentIp();
             bucket.create(experimentSession + "/" + "server-" + agentIp + ".csv", Files.readAllBytes(Paths.get(sessionLog.getAbsolutePath())),"csv");
         } catch (IOException e) {
             e.printStackTrace();

@@ -33,7 +33,7 @@ public class HeartbeatPayload {
 
     @PostConstruct
     public void postConstruct() {
-        ip = environmentVariables.getAgentHost() + ":" + environmentVariables.getAgentPort();
+        ip = environmentVariables.getAgentIp();
         agentSecret = environmentVariables.getAgentSecret();
         experimentSession = "Uninitialized";
         experimentStatus = "Uninitialized";
