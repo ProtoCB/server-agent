@@ -35,15 +35,17 @@ public class NorthBoundAPI {
     public ResponseEntity scheduleExperiment(@RequestHeader("agent-secret") String secret, @RequestBody ExperimentRecipe experimentRecipe) {
         try {
 
+            System.out.println("Scheduling experiment - " + experimentRecipe.getExperimentSession());
+
             if(!secret.equals(environmentVariables.getAgentSecret())) {
+                System.out.println("Agent secret does not match");
                 return ResponseEntity.status(401).body(null);
             }
 
             if(!agentState.getExperimentSession().equals("Uninitialized")) {
+                System.out.println("Experiment already scheduled - not scheduling");
                 return ResponseEntity.status(401).body(null);
             }
-
-            System.out.println(experimentRecipe.toString());
 
             agentState.setExperimentSession(experimentRecipe.getExperimentSession());
             agentState.setEventsToLog(experimentRecipe.getEventsToLog());
@@ -56,6 +58,8 @@ public class NorthBoundAPI {
             serverAvailabilityScheduler.scheduleExperiment(experimentRecipe.getServerAvailabilitySchedule());
             experimentScheduler.scheduleExperiment(experimentRecipe.getExperimentSchedule());
 
+            System.out.println("Experiment Scheduled - " + experimentRecipe.getExperimentSession());
+
             return ResponseEntity.ok().body(null);
 
         } catch(Exception e) {
@@ -66,6 +70,8 @@ public class NorthBoundAPI {
     @PatchMapping("/reset-agent")
     public ResponseEntity resetAgent(@RequestHeader("agent-secret") String secret) {
         try {
+
+            System.out.println("Received cancel signal");
 
             if(!secret.equals(environmentVariables.getAgentSecret())) {
                 return ResponseEntity.status(401).body(null);
