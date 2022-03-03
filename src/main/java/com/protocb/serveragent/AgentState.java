@@ -96,7 +96,6 @@ public class AgentState implements Subject {
 
     public void setTfProbability(float tfProbability) {
         this.tfProbability = tfProbability;
-        this.notifyObservers();
     }
 
     public void setExperimentSession(@NonNull final String experimentSession) {
@@ -131,7 +130,6 @@ public class AgentState implements Subject {
 
     public void setFailureInferenceTime(int failureInferenceTime) {
         this.failureInferenceTime = failureInferenceTime;
-        this.notifyObservers();
     }
 
     public void setExperimentStatus(@NonNull final String experimentStatus) {

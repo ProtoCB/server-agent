@@ -31,6 +31,8 @@ public class WestBoundAPI {
     public ResponseEntity handleClientAgentRequest(@RequestBody ServerRequestBody serverRequestBody) {
         try {
 
+            System.out.println("REQ");
+
             gedcbServerRegister.registerInteraction(serverRequestBody.getIp());
 
             long currentTime = Instant.now().toEpochMilli() % 1000000;
@@ -45,7 +47,7 @@ public class WestBoundAPI {
             return ResponseEntity.ok().body(null);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
             logger.logErrorEvent("Error while handling client request");
             return ResponseEntity.internalServerError().body(null);
         }

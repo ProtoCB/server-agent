@@ -60,10 +60,10 @@ public class Logger {
 
     private void createExperimentSessionLog() {
         try {
-            FileUtils.cleanDirectory(new File(environmentVariables.getLogDirectory()));
             sessionLog = new File(environmentVariables.getLogFilePath());
             sessionLog.createNewFile();
             bufferedWriter = new BufferedWriter(new FileWriter(sessionLog));
+            bufferedWriter.append("EventId" + "," + "Timestamp" + "," + "Message" + "," + "Thread" + "\n");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -74,6 +74,7 @@ public class Logger {
             bufferedWriter.flush();
             String agentIp = environmentVariables.getAgentIp();
             bucket.create(experimentSession + "/" + "server-" + agentIp + ".csv", Files.readAllBytes(Paths.get(sessionLog.getAbsolutePath())),"csv");
+            System.out.println("Logs shipped for " + experimentSession);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -82,7 +83,7 @@ public class Logger {
     public void log(String eventId, String message) {
         try {
             if(eventsToLog.contains(eventId)) {
-                bufferedWriter.append(eventId + "," + Instant.now().toEpochMilli() + "," + message + "\n");
+                bufferedWriter.append(eventId + "," + Instant.now().toEpochMilli() + "," + message + "," + Thread.currentThread().getName() + "\n");
             }
         } catch (IOException e) {
             e.printStackTrace();

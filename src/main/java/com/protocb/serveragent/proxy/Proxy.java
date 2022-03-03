@@ -68,6 +68,7 @@ public class Proxy implements Observer {
             boolean clientReachable = !networkPartitioned || allowList.contains(clientUrl);
 
             if(!shouldFailTransiently && clientReachable) {
+                System.out.println("Sending GSR - " + clientUrl);
                 WebClient.create(clientUrl)
                         .post()
                         .uri("/api/v1/gedcb/gsr")
