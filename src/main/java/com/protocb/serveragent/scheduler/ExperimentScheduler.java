@@ -42,6 +42,7 @@ public class ExperimentScheduler {
                 logger.logSchedulingEvent("Experiment started");
                 agentState.setExperimentUnderProgress(true);
             } else {
+                agentState.setServerAvailable(false);
                 agentState.setExperimentUnderProgress(false);
                 logger.logSchedulingEvent("Experiment ended");
             }

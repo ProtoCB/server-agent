@@ -13,6 +13,9 @@ public class ServerRequestBody {
     private int minLatency;
 
     @JsonProperty
+    private int failureInferenceTime;
+
+    @JsonProperty
     private long timestamp;
 
 }

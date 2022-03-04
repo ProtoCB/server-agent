@@ -1,6 +1,7 @@
 package com.protocb.serveragent;
 
 import com.protocb.serveragent.dto.ServerRequestBody;
+import com.protocb.serveragent.dto.ServerResponseBody;
 import com.protocb.serveragent.gedcb.GEDCBServerRegister;
 import com.protocb.serveragent.logger.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,27 +28,25 @@ public class WestBoundAPI {
     @Autowired
     private GEDCBServerRegister gedcbServerRegister;
 
+    @Autowired
+    private AgentState agentState;
+
     @PostMapping("/")
     public ResponseEntity handleClientAgentRequest(@RequestBody ServerRequestBody serverRequestBody) {
         try {
 
             System.out.println("REQ");
 
-            gedcbServerRegister.registerInteraction(serverRequestBody.getIp());
+            boolean serverAvailable = agentState.isServerAvailable();
 
-            long currentTime = Instant.now().toEpochMilli() % 1000000;
-            long timeElapsedSinceRequestOriginated = serverRequestBody.getTimestamp() - currentTime;
-
-            long minExpectedDelay = serverRequestBody.getMinLatency() - (2 * timeElapsedSinceRequestOriginated);
-
-            if(minExpectedDelay > 0) {
-                Thread.sleep(minExpectedDelay);
+            if(serverAvailable) {
+                gedcbServerRegister.registerInteraction(serverRequestBody.getIp());
             }
 
-            return ResponseEntity.ok().body(null);
+            return ResponseEntity.ok().body(ServerResponseBody.builder().serverAvailable(serverAvailable).build());
 
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
             logger.logErrorEvent("Error while handling client request");
             return ResponseEntity.internalServerError().body(null);
         }

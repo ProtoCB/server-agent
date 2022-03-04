@@ -69,7 +69,7 @@ public class Proxy implements Observer {
 
             if(!shouldFailTransiently && clientReachable) {
                 System.out.println("Sending GSR - " + clientUrl);
-                WebClient.create(clientUrl)
+                WebClient.create("http://" + clientUrl)
                         .post()
                         .uri("/api/v1/gedcb/gsr")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -84,6 +84,7 @@ public class Proxy implements Observer {
             }
 
         } catch(Exception e) {
+            e.printStackTrace();
             logger.logErrorEvent("Failed to send GSR message");
         }
     }

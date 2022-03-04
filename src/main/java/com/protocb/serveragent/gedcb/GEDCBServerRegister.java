@@ -66,11 +66,20 @@ public class GEDCBServerRegister implements Observer {
     }
 
     private void removeStaleEntries() {
+        System.out.println("before rse");
+        System.out.println(gossipSets.toString());
+        System.out.println(setSizes.toString());
+
         long currentTime = Instant.now().toEpochMilli() % 1000000;
         for(Integer setId : this.gossipSets.keySet()) {
             this.gossipSets.get(setId).removeIf(entry -> currentTime - entry.getTimestamp() >= setRevisionPeriod);
             this.setSizes.put(setId, this.gossipSets.get(setId).size());
         }
+
+        System.out.println("after rse");
+        System.out.println(gossipSets.toString());
+        System.out.println(setSizes.toString());
+
     }
 
     private synchronized void balanceGossipSets() {
@@ -82,9 +91,11 @@ public class GEDCBServerRegister implements Observer {
             totalEntries += this.setSizes.get(setId);
         }
 
+        System.out.println("Total entries = " + totalEntries);
+
         if(totalEntries == 0) return;
 
-        int requiredSetCount = totalEntries / minSetSize;
+        int requiredSetCount = totalEntries % minSetSize == 0 ? totalEntries / minSetSize : (totalEntries / minSetSize) + 1;
 
         List<ClientEntry> entriesToReallocate = new ArrayList<>();
 
@@ -125,18 +136,29 @@ public class GEDCBServerRegister implements Observer {
 
     }
 
+    private String getGedcbServerState() {
+        String state = "Version=" + version + "{";
+        for(Integer setId:gossipSets.keySet()) {
+            state += "[ ";
+            for(ClientEntry entry:gossipSets.get(setId)) {
+                state += entry.getClientId() + " ";
+            }
+            state += "]";
+        }
+        state += "}";
+        return state;
+    }
+
     private void reviseGossipSet() {
         try {
-
-            System.out.println("GSR");
 
             balanceGossipSets();
             version++;
 
-            System.out.println(gossipSets.toString());
-            System.out.println(setSizes.toString());
+            logger.log("GSR", getGedcbServerState());
 
-            for(Integer setId:this.gossipSets.keySet()) {
+            Set<Integer> setIds = this.gossipSets.keySet();
+            for(Integer setId:setIds) {
                 List<ClientEntry> entries = this.gossipSets.get(setId);
                 List<String> gossipSet = entries.stream().map(entry -> entry.getClientId()).collect(Collectors.toList());
                 SetRevisionMessage setRevisionMessage = SetRevisionMessage.builder().version(version).clientIds(gossipSet).build();
@@ -153,6 +175,7 @@ public class GEDCBServerRegister implements Observer {
 
             }
 
+
         } catch (Exception e) {
             e.printStackTrace();
             logger.logErrorEvent("GSR Failed! - " + e.getMessage());
@@ -160,45 +183,40 @@ public class GEDCBServerRegister implements Observer {
     }
 
     public synchronized void registerInteraction(String clientId) {
-        try {
 
-            if(!enabled) return;
+        if(!enabled) return;
 
-            System.out.println(setSizes.toString());
-            System.out.println(gossipSets.toString());
+        ClientEntry clientEntry = null;
+        for(Integer setId : gossipSets.keySet()) {
 
-            ClientEntry clientEntry = null;
-            for(Integer setId : gossipSets.keySet()) {
+            clientEntry = gossipSets.get(setId)
+                    .stream()
+                    .filter(entry -> entry.getClientId().equals(clientId))
+                    .findFirst()
+                    .orElse(null);
 
-                clientEntry = gossipSets.get(setId)
-                        .stream()
-                        .filter(entry -> entry.getClientId().equals(clientId))
-                        .findFirst()
-                        .orElse(null);
+            if(clientEntry != null) break;
 
-                if(clientEntry != null) break;
-
-            }
-
-            if(clientEntry != null) {
-                clientEntry.setTimestamp(Instant.now().toEpochMilli() % 1000000);
-            } else {
-                Integer setId = Collections.min(setSizes.entrySet(), Map.Entry.comparingByValue()).getKey();
-                gossipSets
-                        .get(setId)
-                        .add(ClientEntry
-                                .builder()
-                                .clientId(clientId)
-                                .timestamp(Instant.now().toEpochMilli() % 1000000)
-                                .build()
-                        );
-                setSizes.put(setId, gossipSets.get(setId).size());
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            logger.logErrorEvent("Failed to register interaction - " + clientId + " - " + e.getMessage());
         }
+
+        if(clientEntry != null) {
+            clientEntry.setTimestamp(Instant.now().toEpochMilli() % 1000000);
+        } else {
+            Integer setId = Collections.min(setSizes.entrySet(), Map.Entry.comparingByValue()).getKey();
+            gossipSets
+                    .get(setId)
+                    .add(ClientEntry
+                            .builder()
+                            .clientId(clientId)
+                            .timestamp(Instant.now().toEpochMilli() % 1000000)
+                            .build()
+                    );
+            setSizes.put(setId, gossipSets.get(setId).size());
+        }
+
+        System.out.println(setSizes.toString());
+        System.out.println(gossipSets.toString());
+
     }
 
     private void initialize(Map<String, Integer> parameters) {
@@ -231,14 +249,20 @@ public class GEDCBServerRegister implements Observer {
         if(gsrTask != null && !gsrTask.isDone()) {
             gsrTask.cancel(true);
         }
+        int randomId = (int)(Math.random() * 1000);
+        this.gossipSets.clear();
+        this.setSizes.clear();
+        this.gossipSets.put(randomId, new ArrayList<>());
+        this.setSizes.put(randomId, 0);
+        this.version++;
     }
 
     @Override
-    public void update() {
-        if(!enabled && agentState.getCircuitBreakerType().equals("GEDCB")) {
+    public synchronized void update() {
+        if(!enabled && (agentState.getCircuitBreakerType().equals("GEDCB") && agentState.isServerAvailable())) {
             System.out.println("Enable GEDCB Register");
             initialize(agentState.getCircuitBreakerParameters());
-        } else if(enabled && !agentState.getCircuitBreakerType().equals("GEDCB")) {
+        } else if(enabled && !(agentState.getCircuitBreakerType().equals("GEDCB") && agentState.isServerAvailable())) {
             reset();
         }
     }
