@@ -66,19 +66,12 @@ public class GEDCBServerRegister implements Observer {
     }
 
     private void removeStaleEntries() {
-        System.out.println("before rse");
-        System.out.println(gossipSets.toString());
-        System.out.println(setSizes.toString());
 
         long currentTime = Instant.now().toEpochMilli() % 1000000;
         for(Integer setId : this.gossipSets.keySet()) {
             this.gossipSets.get(setId).removeIf(entry -> currentTime - entry.getTimestamp() >= setRevisionPeriod);
             this.setSizes.put(setId, this.gossipSets.get(setId).size());
         }
-
-        System.out.println("after rse");
-        System.out.println(gossipSets.toString());
-        System.out.println(setSizes.toString());
 
     }
 
@@ -90,8 +83,6 @@ public class GEDCBServerRegister implements Observer {
         for(Integer setId:this.gossipSets.keySet()) {
             totalEntries += this.setSizes.get(setId);
         }
-
-        System.out.println("Total entries = " + totalEntries);
 
         if(totalEntries == 0) return;
 
@@ -214,14 +205,9 @@ public class GEDCBServerRegister implements Observer {
             setSizes.put(setId, gossipSets.get(setId).size());
         }
 
-        System.out.println(setSizes.toString());
-        System.out.println(gossipSets.toString());
-
     }
 
     private void initialize(Map<String, Integer> parameters) {
-        System.out.println("Parameters");
-        System.out.println(parameters);
         this.gsrMessageCount = parameters.get("gsrMessageCount");
         this.version = 1l;
         this.minSetSize = parameters.get("minSetSize");
@@ -237,9 +223,6 @@ public class GEDCBServerRegister implements Observer {
         if(gsrTask != null && !gsrTask.isDone()) {
             gsrTask.cancel(true);
         }
-
-        System.out.println(gossipSets.toString());
-        System.out.println(setSizes.toString());
 
         gsrTask = scheduledExecutorService.scheduleWithFixedDelay(() -> this.reviseGossipSet(), 0, this.setRevisionPeriod, TimeUnit.MILLISECONDS);
     }
@@ -260,7 +243,6 @@ public class GEDCBServerRegister implements Observer {
     @Override
     public synchronized void update() {
         if(!enabled && (agentState.getCircuitBreakerType().equals("GEDCB") && agentState.isServerAvailable())) {
-            System.out.println("Enable GEDCB Register");
             initialize(agentState.getCircuitBreakerParameters());
         } else if(enabled && !(agentState.getCircuitBreakerType().equals("GEDCB") && agentState.isServerAvailable())) {
             reset();

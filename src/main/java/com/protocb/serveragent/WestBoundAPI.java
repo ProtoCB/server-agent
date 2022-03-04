@@ -35,8 +35,6 @@ public class WestBoundAPI {
     public ResponseEntity handleClientAgentRequest(@RequestBody ServerRequestBody serverRequestBody) {
         try {
 
-            System.out.println("REQ");
-
             boolean serverAvailable = agentState.isServerAvailable();
 
             if(serverAvailable) {

@@ -73,7 +73,7 @@ public class NorthBoundAPI {
     public ResponseEntity resetAgent(@RequestHeader("agent-secret") String secret) {
         try {
 
-            System.out.println("Received cancel signal");
+            System.out.println("Received reset signal");
 
             if(!secret.equals(environmentVariables.getAgentSecret())) {
                 return ResponseEntity.status(401).body(null);
