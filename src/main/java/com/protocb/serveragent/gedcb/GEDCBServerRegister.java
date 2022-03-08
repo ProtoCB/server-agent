@@ -161,6 +161,7 @@ public class GEDCBServerRegister implements Observer {
                     if(!clientsThatReceiveGsrMessage.contains(clientId)) {
                         proxy.sendGsrMessage(clientId, setRevisionMessage);
                         clientsThatReceiveGsrMessage.add(clientId);
+                        logger.log("GSRSEND", clientId);
                     }
                 }
 

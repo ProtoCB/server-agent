@@ -78,7 +78,6 @@ public class Proxy implements Observer {
                         .bodyToMono(String.class)
                         .timeout(Duration.ofMillis(failureInferenceTime))
                         .block();
-
             } else {
                 Thread.sleep(failureInferenceTime);
             }
